@@ -3,10 +3,12 @@ package hello.noddy.querydsl;
 import static hello.noddy.querydsl.entity.QMember.*;
 import static org.assertj.core.api.Assertions.*;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hello.noddy.querydsl.entity.Member;
 import hello.noddy.querydsl.entity.QMember;
 import hello.noddy.querydsl.entity.Team;
+import java.util.List;
 import javax.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,5 +97,34 @@ public class QuerydslBasicTest {
         .fetchOne();
 
     assertThat(findMember2.getUsername()).isEqualTo("member1");
+  }
+
+  @Test
+  void resultFetchTest() {
+    List<Member> fetch = queryFactory
+        .selectFrom(member)
+        .fetch();
+
+    Member fetchOne = queryFactory
+        .selectFrom(member)
+        .where(member.username.eq("member1"))
+        .fetchOne();
+
+    Member fetchFirst = queryFactory
+        .selectFrom(member)
+        .fetchFirst();
+
+    // 쿼리 2번 나간다 -> total 가져오기 위해서 count 쿼리
+    QueryResults<Member> results = queryFactory
+        .selectFrom(member)
+        .fetchResults();
+
+    long total = results.getTotal();
+    long offset = results.getOffset();
+    List<Member> content = results.getResults();
+
+    long count = queryFactory
+        .selectFrom(member)
+        .fetchCount();
   }
 }
