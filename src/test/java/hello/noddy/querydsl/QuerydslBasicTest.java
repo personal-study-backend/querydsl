@@ -153,4 +153,18 @@ public class QuerydslBasicTest {
     assertThat(member6.getUsername()).isEqualTo("member6");
     assertThat(memberNull.getUsername()).isNull();
   }
+
+  // offset, limit 2가지로 페이징 지원
+  @Test
+  void pagingTest() {
+    List<Member> result = queryFactory
+        .selectFrom(member)
+        .orderBy(member.username.desc())
+        .offset(1)
+        .limit(2)
+        .fetch();
+
+    assertThat(result.size()).isEqualTo(2);
+    // 전체 조회수 필요하면, fetchResults
+  }
 }
