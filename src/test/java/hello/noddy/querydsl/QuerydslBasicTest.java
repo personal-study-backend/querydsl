@@ -72,4 +72,28 @@ public class QuerydslBasicTest {
 
     assertThat(findMember.getUsername()).isEqualTo("member1");
   }
+
+  @Test
+  void searchTest() {
+    // username이 member1이고 age가 10인 member 가져와라
+    Member findMember = queryFactory
+        .selectFrom(member)
+        .where(member.username.eq("member1")
+            .and(member.age.eq(10)))
+        .fetchOne();
+
+    assertThat(findMember.getUsername()).isEqualTo("member1");
+
+    // where 파라미터로 검색 조건을 추가할 수 있다. (and 조건으로)
+    // 아래와 같은 방식으로 작성하면 null일 경우 무시되서 동적 쿼리 작성 시 유리해짐
+    Member findMember2 = queryFactory
+        .selectFrom(member)
+        .where(
+            member.username.eq("member1"),
+            member.age.eq(10)
+        )
+        .fetchOne();
+
+    assertThat(findMember2.getUsername()).isEqualTo("member1");
+  }
 }
