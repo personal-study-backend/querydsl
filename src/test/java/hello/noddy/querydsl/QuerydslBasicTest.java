@@ -14,6 +14,8 @@ import hello.noddy.querydsl.entity.QTeam;
 import hello.noddy.querydsl.entity.Team;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -280,5 +282,39 @@ public class QuerydslBasicTest {
     for (Tuple result : results) {
       System.out.println(result);
     }
+  }
+
+  @PersistenceUnit
+  EntityManagerFactory emf;
+
+  @Test
+  void noFetchJoinTest() {
+    entityManager.flush();
+    entityManager.clear();
+
+    Member findMember = queryFactory
+        .selectFrom(member)
+        .where(member.username.eq("member1"))
+        .fetchOne();
+    // 멤버의 team은 lazy로 설정해두었기 때문에, 이렇게만 조회하면 member만 조회되고, team은 조회 안된다.
+
+    // emf에서 얻은 persistenceUnitUtil의 isLoaded메소드로 이미 로딩된 엔티티인지 아닌지 알려주는 기능
+    boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+    assertThat(loaded).isFalse();
+  }
+
+  @Test
+  void useFetchJoinTest() {
+    entityManager.flush();
+    entityManager.clear();
+
+    Member findMember = queryFactory
+        .selectFrom(member)
+        .join(member.team, team).fetchJoin()
+        .where(member.username.eq("member1"))
+        .fetchOne();
+
+    boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+    assertThat(loaded).isTrue();
   }
 }
