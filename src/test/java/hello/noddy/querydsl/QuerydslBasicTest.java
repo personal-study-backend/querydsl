@@ -1,5 +1,6 @@
 package hello.noddy.querydsl;
 
+import static hello.noddy.querydsl.entity.QMember.*;
 import static org.assertj.core.api.Assertions.*;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -59,12 +60,14 @@ public class QuerydslBasicTest {
 
   @Test
   void startQueryDsl() {
-    QMember m = new QMember("m");
+    // QMember m = new QMember("m"); // 별칭 직접 지정
+    // QMember m = QMember.member; // 기본 인스턴스 생성
+    // but static import 사용하자
 
     Member findMember = queryFactory
-        .select(m)
-        .from(m)
-        .where(m.username.eq("member1"))
+        .select(member)
+        .from(member)
+        .where(member.username.eq("member1"))
         .fetchOne();
 
     assertThat(findMember.getUsername()).isEqualTo("member1");
