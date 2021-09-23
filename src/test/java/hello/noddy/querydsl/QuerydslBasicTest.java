@@ -1,12 +1,15 @@
 package hello.noddy.querydsl;
 
 import static hello.noddy.querydsl.entity.QMember.*;
+import static hello.noddy.querydsl.entity.QTeam.*;
 import static org.assertj.core.api.Assertions.*;
 
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hello.noddy.querydsl.entity.Member;
 import hello.noddy.querydsl.entity.QMember;
+import hello.noddy.querydsl.entity.QTeam;
 import hello.noddy.querydsl.entity.Team;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -166,5 +169,43 @@ public class QuerydslBasicTest {
 
     assertThat(result.size()).isEqualTo(2);
     // 전체 조회수 필요하면, fetchResults
+  }
+
+  @Test
+  void aggregationTest() {
+    List<Tuple> result = queryFactory
+        .select(
+            member.count(),
+            member.age.sum(),
+            member.age.avg(),
+            member.age.max(),
+            member.age.min()
+        )
+        .from(member)
+        .fetch();
+
+    for (Tuple tuple : result) {
+      System.out.println(tuple);
+    }
+  }
+
+  // 팀의 이름과 각 팀의 평균 연령
+  @Test
+  void groupByTest() {
+    List<Tuple> result = queryFactory
+        .select(team.name, member.age.avg())
+        .from(member)
+        .join(member.team, team)
+        .groupBy(team.name)
+        .fetch();
+
+    Tuple teamA = result.get(0);
+    Tuple teamB = result.get(1);
+
+    assertThat(teamA.get(team.name)).isEqualTo("teamA");
+    assertThat(teamA.get(member.age.avg())).isEqualTo(15);
+
+    assertThat(teamB.get(team.name)).isEqualTo("teamB");
+    assertThat(teamB.get(member.age.avg())).isEqualTo(35);
   }
 }
