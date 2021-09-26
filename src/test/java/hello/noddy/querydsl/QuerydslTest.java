@@ -6,6 +6,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hello.noddy.querydsl.dto.MemberDto;
+import hello.noddy.querydsl.dto.QMemberDto;
 import hello.noddy.querydsl.dto.UserDto;
 import hello.noddy.querydsl.entity.Member;
 import hello.noddy.querydsl.entity.QMember;
@@ -145,6 +146,17 @@ public class QuerydslTest {
         .fetch();
     for (UserDto userDto : result) {
       System.out.println("userDto = " + userDto);
+    }
+  }
+
+  @Test
+  void findDtoByQueryProjection() {
+    List<MemberDto> result = queryFactory
+        .select(new QMemberDto(member.username, member.age))
+        .from(member)
+        .fetch();
+    for (MemberDto memberDto : result) {
+      System.out.println("memberDto = " + memberDto);
     }
   }
 }
