@@ -4,7 +4,9 @@ import static hello.noddy.querydsl.entity.QMember.*;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hello.noddy.querydsl.dto.MemberDto;
 import hello.noddy.querydsl.dto.QMemberDto;
@@ -14,6 +16,7 @@ import hello.noddy.querydsl.entity.QMember;
 import hello.noddy.querydsl.entity.Team;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder.In;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -184,5 +187,48 @@ public class QuerydslTest {
         .selectFrom(member)
         .where(builder)
         .fetch();
+  }
+
+  @Test
+  void dynamicQuery_WhereParam() {
+    String usernameParam = "member1";
+    Integer ageParam = 10;
+
+    List<Member> result = searchMember2(usernameParam, ageParam);
+    Assertions.assertThat(result.size()).isEqualTo(1);
+  }
+
+  private List<Member> searchMember2(String usernameCond, Integer ageCond) {
+    return queryFactory
+        .selectFrom(member)
+        .where(usernameEq(usernameCond), ageEq(ageCond))
+        .fetch();
+  }
+
+  private BooleanExpression usernameEq(String usernameCond) {
+    return usernameCond != null ? member.username.eq(usernameCond) : null;
+  }
+
+  private BooleanExpression ageEq(Integer ageCond) {
+    return ageCond != null ? member.age.eq(ageCond) : null;
+  }
+
+  @Test
+  void whereParam_nullTest() {
+    entityManager.persist(new Member("member1", 20));
+
+    String usernameParam = "member1";
+    Integer ageParam = null;
+
+    List<Member> result = queryFactory.selectFrom(member)
+        .where(allEq(usernameParam, ageParam))
+        .fetch();
+    for (Member member1 : result) {
+      System.out.println("member1 = " + member1);
+    }
+  }
+
+  private BooleanExpression allEq(String usernameCond, Integer ageCond) {
+    return usernameEq(usernameCond).and(ageEq(ageCond));
   }
 }
