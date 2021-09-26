@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.*;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -404,6 +405,30 @@ public class QuerydslBasicTest {
         .fetch();
 
     for (String s : result) {
+      System.out.println(s);
+    }
+  }
+
+  @Test
+  void constantTest() {
+    List<Tuple> result = queryFactory
+        .select(member.username, Expressions.constant("A"))
+        .from(member)
+        .fetch();
+
+    for (Tuple tuple : result) {
+      System.out.println(tuple);
+    }
+
+    // username_나이
+    // .select(member.username.concat("_").concat(member.age)) 이건 타입이 달라서 안된다.
+    List<String> concatResult = queryFactory
+        .select(member.username.concat("_").concat(member.age.stringValue()))
+        .from(member)
+        .where(member.username.eq("member1"))
+        .fetch();
+
+    for (String s : concatResult) {
       System.out.println(s);
     }
   }
