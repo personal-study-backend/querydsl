@@ -7,6 +7,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import hello.noddy.querydsl.dto.MemberDto;
 import hello.noddy.querydsl.dto.QMemberDto;
@@ -274,5 +275,22 @@ public class QuerydslTest {
         .delete(member)
         .where(member.age.gt(18))
         .execute();
+  }
+
+  @Test
+  void sqlFunctionTest() {
+    List<String> result = queryFactory
+        .select(
+            Expressions.stringTemplate(
+                "function('replace', {0}, {1}, {2})",
+                member.username, "member", "M")
+        )
+        .from(member)
+        .fetch();
+
+    for (String s : result) {
+      System.out.println("s = " + s);
+    }
+
   }
 }
