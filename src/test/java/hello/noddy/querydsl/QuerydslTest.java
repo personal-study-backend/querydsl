@@ -3,7 +3,10 @@ package hello.noddy.querydsl;
 import static hello.noddy.querydsl.entity.QMember.*;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import hello.noddy.querydsl.dto.MemberDto;
+import hello.noddy.querydsl.dto.UserDto;
 import hello.noddy.querydsl.entity.Member;
 import hello.noddy.querydsl.entity.QMember;
 import hello.noddy.querydsl.entity.Team;
@@ -57,9 +60,7 @@ public class QuerydslTest {
   }
 
   /**
-   * tuple은 querydsl에서 지원해주는 타입.
-   * 즉, repository 계층을 넘어서서 서비스 계층 등에 가면 좋지 않다.
-   * querydsl에 의존적이게 된다.
+   * tuple은 querydsl에서 지원해주는 타입. 즉, repository 계층을 넘어서서 서비스 계층 등에 가면 좋지 않다. querydsl에 의존적이게 된다.
    */
   @Test
   void tupleProjection() {
@@ -74,6 +75,76 @@ public class QuerydslTest {
 
       System.out.println("username = " + username);
       System.out.println("age = " + age);
+    }
+  }
+
+  @Test
+  void findDtoByJpql() {
+    // jpql new operation을 통해 조회하는 방법
+    List<MemberDto> result = entityManager.createQuery(
+        "select new hello.noddy.querydsl.dto.MemberDto(m.username, m.age) from Member m",
+        MemberDto.class)
+        .getResultList();
+
+    for (MemberDto memberDto : result) {
+      System.out.println("memberDto = " + memberDto);
+    }
+  }
+
+  @Test
+  void findDtoByQuerydslSetter() {
+    List<MemberDto> result = queryFactory
+        .select(Projections.bean(MemberDto.class,
+            member.username,
+            member.age))
+        .from(member)
+        .fetch();
+    for (MemberDto memberDto : result) {
+      System.out.println("memberDto = " + memberDto);
+    }
+  }
+
+  @Test
+  void findDtoByQuerydslField() {
+    List<MemberDto> result = queryFactory
+        .select(Projections.fields(MemberDto.class,
+            member.username,
+            member.age))
+        .from(member)
+        .fetch();
+
+    for (MemberDto memberDto : result) {
+      System.out.println("memberDto = " + memberDto);
+    }
+  }
+
+  @Test
+  void findDtoByConstructor() {
+    List<MemberDto> result = queryFactory
+        .select(Projections.constructor(MemberDto.class,
+            member.username,
+            member.age))
+        .from(member)
+        .fetch();
+
+    for (MemberDto memberDto : result) {
+      System.out.println("memberDto = " + memberDto);
+    }
+  }
+
+  @Test
+  void findUserDtoByField() {
+    // 별칭이 다를때
+    // member는 username이지만, 받는 userDto는 name이기 때문에
+
+    List<UserDto> result = queryFactory
+        .select(Projections.fields(UserDto.class,
+            member.username.as("name"),
+            member.age))
+        .from(member)
+        .fetch();
+    for (UserDto userDto : result) {
+      System.out.println("userDto = " + userDto);
     }
   }
 }
