@@ -94,8 +94,6 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
             ageGoe(condition.getAgeGoe()),
             ageLoe(condition.getAgeLoe())
         )
-        .offset(pageable.getOffset()) // 몇번째부터 시작할 거다
-        .limit(pageable.getPageSize()) // 한페이지에 몇개까지 가져올 것인지.
         .fetch();
 
     JPAQuery<Member> countQuery = queryFactory
